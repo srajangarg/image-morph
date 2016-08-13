@@ -84,7 +84,12 @@ class LineSegment
      */
     double segmentDistance(Vec2 const & p, double u, double v) const
     {
-      // TODO: The method is outlined in the paper. Remember to handle points that project beyond the endpoints correctly!
+      if(u < 0)
+        return (p - start()).length();
+      else if (u > 1)
+        return (p - start()).length();
+      else
+        return abs(v);
       return 0;
     }
 

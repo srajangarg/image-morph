@@ -124,7 +124,7 @@ distortImage(Image const & image,
   int n = image.numChannels();
   
   Image result(w, h, n);
-  Vec2 interpolated, dis, dissum, tmp;
+  Vec2 interpolated, dis, dissum, curr;
   LineSegment start_ln, end_ln;
 
   unsigned char ss[4];
@@ -142,15 +142,16 @@ distortImage(Image const & image,
       { 
         start_ln = seg_start[i];
         end_ln = seg_start[i].lerp(seg_end[i], t);
+        curr = Vec2(col, row);
 
-        u = end_ln.lineParameter(Vec2(col, row));
-        v = end_ln.signedLineDistance(Vec2(col, row));
+        u = end_ln.lineParameter(curr);
+        v = end_ln.signedLineDistance(curr);
 
         interpolated = start_ln.start() + u * (start_ln.end() - start_ln.start())
                      + v * (start_ln.perp() / start_ln.length());
 
-        dis = (interpolated - Vec2(col, row));
-        wt = pow(pow(start_ln.length(), p)/(a + abs(v)), b);
+        dis = (interpolated - curr);
+        wt = pow(pow(start_ln.length(), p)/(a + start_ln.segmentDistance(curr)), b);
         dissum += dis * wt;
         wtsum += wt;
       }
@@ -224,10 +225,10 @@ morphImages(Image const & img1,
   Image distorted2 = distortImage(img2, seg2, seg1, 1-t, a, b, p);
 
   // Now blend the results by linearly interpolating ("lerping")
-  Image blended = blendImages(distorted1, distorted2, t);
+  Image blended = blendImages(distorted1, distorted2, 1-t);
 
-  return blended;
   // return Image();
+  return blended;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

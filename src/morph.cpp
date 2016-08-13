@@ -147,9 +147,9 @@ distortImage(Image const & image,
         v = end_ln.signedLineDistance(Vec2(col, row));
 
         interpolated = start_ln.start() + u * (start_ln.end() - start_ln.start())
-                     + v * (end_ln.perp() / end_ln.length());
+                     + v * (start_ln.perp() / start_ln.length());
 
-        dis = (Vec2(col, row) - interpolated);
+        dis = (interpolated - Vec2(col, row));
         wt = pow(pow(start_ln.length(), p)/(a + abs(v)), b);
         dissum += dis * wt;
         wtsum += wt;
@@ -221,13 +221,13 @@ morphImages(Image const & img1,
 
   // Then distort img2 from 1 to (1 - t)
   // using seg2 as the initial segments and seg1 as the final ones.
-  // Image distorted2 = distortImage(img2, seg2, seg1, 1-t, a, b, p);
+  Image distorted2 = distortImage(img2, seg2, seg1, 1-t, a, b, p);
 
   // Now blend the results by linearly interpolating ("lerping")
-  // Image blended = blendImages(distorted1, distorted2, t);
+  Image blended = blendImages(distorted1, distorted2, t);
 
-  // return blended;
-  return Image();
+  return blended;
+  // return Image();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

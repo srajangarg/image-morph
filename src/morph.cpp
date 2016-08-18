@@ -141,17 +141,17 @@ distortImage(Image const & image,
       for (unsigned int i = 0; i < seg_start.size(); ++i)
       { 
         start_ln = seg_start[i];
-        end_ln = seg_start[i].lerp(seg_end[i], t);
+        end_ln = start_ln.lerp(seg_end[i], t);
         curr = Vec2(col, row);
 
         u = end_ln.lineParameter(curr);
         v = end_ln.signedLineDistance(curr);
 
-        interpolated = start_ln.start() + u * (start_ln.end() - start_ln.start())
+        interpolated = start_ln.start() + u * (start_ln.direction())
                      + v * (start_ln.perp() / start_ln.length());
 
         dis = (interpolated - curr);
-        wt = pow(pow(start_ln.length(), p)/(a + start_ln.segmentDistance(curr)), b);
+        wt = pow(pow(start_ln.length(), p)/(a + start_ln.segmentDistance(curr, u, v)), b);
         dissum += dis * wt;
         wtsum += wt;
       }
@@ -164,7 +164,6 @@ distortImage(Image const & image,
         pix[channel] = ss[channel];
     }
   }
-  result.save("debug2.png");
 
   return result;
 }
@@ -338,6 +337,7 @@ main(int argc, char * argv[])
   double t               =  std::atof(argv[4]);
   std::string out_path   =  argv[5];
 
+  // sanity checks
   if (t < 0.0 || t > 1.0)
   {
     std::cout << "Time t out of range: clamping to [0..1]" << std::endl;

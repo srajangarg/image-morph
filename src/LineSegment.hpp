@@ -60,8 +60,7 @@ class LineSegment
 
     Vec2 perp() const
     {
-      Vec2 line(end() - start());
-      return line.perp();
+      return direction().perp();
     }
     /**
      * Get the parametric location of a point when orthogonally projected onto the line containing the segment. In other words,

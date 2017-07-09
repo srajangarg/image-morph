@@ -6,7 +6,7 @@ The assignment deals with metamorphosis of one digital image into another in a f
 
 Features on George Bush -> Barrack Obama
 
-<img src="/images/bush_lines.png" width="47%">	<img src="/images/obama_lines.png" width="47%">
+<img src="/images/bush_lines.png" width="95%">
 
 George Bush -> Barrack Obama
 

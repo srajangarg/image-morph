@@ -83,10 +83,13 @@ class LineSegment
      */
     double segmentDistance(Vec2 const & p, double u, double v) const
     {
+      // projects before start()
       if(u < 0)
         return (p - start()).length();
+      // projects on the line
       else if (u > 1)
         return (p - start()).length();
+      // projects after end()
       else
         return abs(v);
       return 0;

@@ -82,11 +82,13 @@ sampleBilinear(Image const & image, Vec2 const & loc, unsigned char sampled_colo
   int pr0 = max(0, min(row0, h-1));
   int pr1 = min(pr0 + 1, h-1);
   
+  // pixel values at the sanitized points
   const unsigned char * pix00 = image.pixel(pr0, pc0);
   const unsigned char * pix01 = image.pixel(pr0, pc1);
   const unsigned char * pix10 = image.pixel(pr1, pc0);
   const unsigned char * pix11 = image.pixel(pr1, pc1);
   
+  // https://en.wikipedia.org/wiki/Bilinear_interpolation
   double res;
   for (int channel = 0; channel < n; ++channel)
   {
@@ -100,6 +102,7 @@ sampleBilinear(Image const & image, Vec2 const & loc, unsigned char sampled_colo
     sampled_color[channel] = min(255, max(0, (int)floor(res)));
   }
 
+  // if numchannels < 4, others set 4 
   for (int i = n; i < 4; ++i)
     sampled_color[i] = 0;
 }
@@ -127,7 +130,7 @@ distortImage(Image const & image,
   Vec2 interpolated, dis, dissum, curr;
   LineSegment start_ln, end_ln;
 
-  unsigned char ss[4];
+  unsigned char sample[4];
   unsigned char* pix;
   double u, v, wt, wtsum;
 
@@ -137,31 +140,38 @@ distortImage(Image const & image,
     {
       wtsum = 0;
       dissum = Vec2(0, 0);
+      curr = Vec2(col, row);
 
       for (unsigned int i = 0; i < seg_start.size(); ++i)
       { 
+        // src line
         start_ln = seg_start[i];
+        // final line
         end_ln = start_ln.lerp(seg_end[i], t);
-        curr = Vec2(col, row);
 
         u = end_ln.lineParameter(curr);
         v = end_ln.signedLineDistance(curr);
 
+        // point interpolated wrt to the src line
         interpolated = start_ln.start() + u * (start_ln.direction())
                      + v * (start_ln.perp() / start_ln.length());
 
+        // displacement vector from the line
         dis = (interpolated - curr);
+        // weight of this displacement
         wt = pow(pow(start_ln.length(), p)/(a + start_ln.segmentDistance(curr, u, v)), b);
         dissum += dis * wt;
         wtsum += wt;
       }
 
-      interpolated = Vec2(col, row) + (dissum/wtsum);
-      sampleBilinear(image, interpolated, ss);
+      // weighted average
+      interpolated = curr + (dissum/wtsum);
+      sampleBilinear(image, interpolated, sample);
 
+      // fill in the interpolated color
       pix = result.pixel(row, col);
       for (int channel = 0; channel < n; ++channel)
-        pix[channel] = ss[channel];
+        pix[channel] = sample[channel];
     }
   }
 
@@ -194,6 +204,7 @@ blendImages(Image const & img1, Image const & img2, double t)
 
       for (int channel = 0; channel < n; ++channel)
       { 
+        // weighted average of the value of the pixel
         double z = ((double)pix_1[channel] * t)
                  + ((double)pix_2[channel] * (1-t));
         res_pix[channel] = floor(z);
